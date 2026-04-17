@@ -1,8 +1,27 @@
-from code.vector_db.connection import add_documents, search
-from code.knowledge_base.parser import split_text
+import chromadb
+from chromadb.utils import embedding_functions
 
 # ----------------------
-# 步骤1：构造应急管理知识库
+# 配置
+# ----------------------
+CHROMA_PERSIST_DIRECTORY = "./vector_db_storage"
+COLLECTION_NAME = "emergency_knowledge"
+EMBEDDING_MODEL = "all-MiniLM-L6-v2"
+
+# ----------------------
+# 初始化向量数据库
+# ----------------------
+client = chromadb.PersistentClient(path=CHROMA_PERSIST_DIRECTORY)
+embedding_func = embedding_functions.SentenceTransformerEmbeddingFunction(model_name=EMBEDDING_MODEL)
+
+collection = client.get_or_create_collection(
+    name=COLLECTION_NAME,
+    embedding_function=embedding_func,
+    metadata={"description": "应急管理知识库"}
+)
+
+# ----------------------
+# 应急知识库数据
 # ----------------------
 emergency_data = [
     {
@@ -24,7 +43,7 @@ emergency_data = [
 ]
 
 # ----------------------
-# 步骤2：把知识存入向量数据库
+# 存入向量库
 # ----------------------
 documents = []
 metadatas = []
@@ -35,15 +54,15 @@ for idx, item in enumerate(emergency_data):
     metadatas.append({"title": item["title"]})
     ids.append(f"emergency_{idx}")
 
-add_documents(documents=documents, metadatas=metadatas, ids=ids)
+collection.add(documents=documents, metadatas=metadatas, ids=ids)
 print("✅ 应急知识已成功存入向量数据库！")
 
 # ----------------------
-# 步骤3：测试语义检索（核心功能）
+# 测试检索
 # ----------------------
 print("\n===== 测试检索 =====")
 question = "有人触电应该怎么办？"
-results = search(question)
+results = collection.query(query_texts=[question], n_results=3)
 
 print("问题：", question)
 print("\n最相关的应急知识：")
