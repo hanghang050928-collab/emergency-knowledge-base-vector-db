@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>AI应急知识问答助手</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:Microsoft YaHei,sans-serif;}
+        body{background:linear-gradient(135deg,#0F2027,#203A43,#2C5364);min-height:100vh;padding:30px 15px;color:#fff;}
+        .container{max-width:1000px;margin:0 auto;}
+        .title{text-align:center;font-size:32px;margin-bottom:10px;}
+        .desc{text-align:center;color:#aaa;margin-bottom:30px;}
+
+        .chat-box{background:rgba(255,255,255,0.07);border-radius:20px;padding:25px;margin-bottom:20px;backdrop-filter:blur(10px);}
+        .input-line{display:flex;gap:10px;margin-bottom:20px;}
+        .input-line input{flex:1;height:50px;border-radius:25px;border:none;padding:0 20px;font-size:15px;outline:none;background:rgba(255,255,255,0.9);color:#222;}
+        .btn{height:50px;padding:0 22px;border-radius:25px;border:none;background:#007BFF;color:#fff;font-size:15px;cursor:pointer;}
+        .btn:hover{background:#0056b3;}
+
+        .answer-box{background:rgba(0,0,0,0.2);border-radius:16px;padding:20px;line-height:1.8;font-size:16px;min-height:80px;white-space:pre-wrap;}
+        .loading{color:#ccc;text-align:center;padding:20px;}
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 class="title">🧯 AI应急知识智能问答系统</h1>
+    <p class="desc">基于向量库 + 大模型RAG智能问答 | 可直接问任何应急问题</p>
+
+    <div class="chat-box">
+        <div class="input-line">
+            <input id="question" placeholder="例如：火灾怎么逃？溺水怎么办？地震怎么办？">
+            <button class="btn" onclick="askAI()">开始AI问答</button>
+        </div>
+
+        <div id="answer" class="answer-box">AI回答将显示在这里...</div>
+    </div>
+</div>
+
+<script>
+async function askAI() {
+    const q = document.getElementById("question").value.trim();
+    if (!q) { alert("请输入问题"); return; }
+
+    const ansEl = document.getElementById("answer");
+    ansEl.innerHTML = "思考中...";
+
+    const res = await fetch("/api/ai_chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: q })
+    });
+
+    const data = await res.json();
+    ansEl.innerHTML = data.answer;
+}
+</script>
+</body>
+</html>
